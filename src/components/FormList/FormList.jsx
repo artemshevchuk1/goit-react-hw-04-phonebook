@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Ul, Li, Button } from './FormList.styled';
 
-export default function FormList({ items, removeContact }) {
+export const FormList = ({ items, removeContact }) => {
   const elements = items.map(({ name, number, id }) => {
     return (
       <Li key={id}>
@@ -12,7 +12,7 @@ export default function FormList({ items, removeContact }) {
     );
   });
   return <Ul>{elements}</Ul>;
-}
+};
 
 FormList.propTypes = {
   contacts: PropTypes.arrayOf(

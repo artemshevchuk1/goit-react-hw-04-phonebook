@@ -1,80 +1,55 @@
 import React from 'react';
-// import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import FormContacts from 'components/FormContacts/FormContacts';
-import FormList from 'components/FormList/FormList';
+import { FormList } from 'components/FormList/FormList';
 import { nanoid } from 'nanoid';
 import { Section, SectionContacts, FormFilter } from './Form.styled';
 
 export default function Form() {
-  const [contacts, setContacts] = useState([]);
-  const [contacts, setContacts] = useState('');
+  const [contacts, setContacts] = useState(() => {
+    const value = JSON.parse(localStorage.getItem('contacts'));
+    return value ?? [];
+  });
+  const [filter, setFilter] = useState('');
 
-  return (
-    <Section>
-      <SectionContacts>
-        <FormContacts onSubmit={addContacts} />
-      </SectionContacts>
-      <SectionContacts>
-        <FormFilter
-          type="text"
-          name="filter"
-          value={filter}
-          onChange={handleChange}
-        />
-        <FormList items={contacts} removeContact={removeContact} />
-      </SectionContacts>
-    </Section>
-  );
-}
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-export class Form extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
-
-  addContacts = contact => {
-    if (this.isDublicate(contact)) {
+  const addContacts = contact => {
+    if (isDublicate(contact)) {
       return alert(`${contact.name} -   is already in contacts.`);
     }
-    this.setState(prev => {
+    setContacts(prev => {
       const newContact = {
         id: nanoid(),
         ...contact,
       };
-      return {
-        contacts: [...prev.contacts, newContact],
-      };
+      return [...prev, newContact];
     });
   };
 
-  removeContact = id => {
-    this.setState(prev => {
-      const newContacts = prev.contacts.filter(item => item.id !== id);
-      return {
-        contacts: newContacts,
-      };
+  const removeContact = id => {
+    setContacts(prev => {
+      const newContacts = prev.filter(item => item.id !== id);
+      return newContacts;
     });
   };
 
-  handleChange = e => {
-    const { name, value } = e.target;
-    this.setState({
-      [name]: value,
-    });
+  const handleChange = e => {
+    const { value } = e.target;
+
+    setFilter(value);
   };
 
-  isDublicate({ name, number }) {
-    const { contacts } = this.state;
+  const isDublicate = ({ name, number }) => {
     const result = contacts.find(
       item => item.name === name && item.number === number
     );
     return result;
-  }
+  };
 
-  getFilterContacts() {
-    const { contacts, filter } = this.state;
-
+  const getFilterContacts = () => {
     if (!filter) {
       return contacts;
     }
@@ -88,44 +63,25 @@ export class Form extends Component {
         normalaizerNumber.includes(normalListedFilter);
       return result;
     });
-
     return filteredContacts;
-  }
+  };
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parselContacts = JSON.parse(contacts);
+  const filteredContacts = getFilterContacts();
 
-    if (parselContacts) {
-      this.setState({ contacts: parselContacts });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-  render() {
-    const { addContacts, handleChange, removeContact } = this;
-    const { filter } = this.state;
-    const contacts = this.getFilterContacts();
-    return (
-      <Section>
-        <SectionContacts>
-          <FormContacts onSubmit={addContacts} />
-        </SectionContacts>
-        <SectionContacts>
-          <FormFilter
-            type="text"
-            name="filter"
-            value={filter}
-            onChange={handleChange}
-          />
-          <FormList items={contacts} removeContact={removeContact} />
-        </SectionContacts>
-      </Section>
-    );
-  }
+  return (
+    <Section>
+      <SectionContacts>
+        <FormContacts onSubmit={addContacts} />
+      </SectionContacts>
+      <SectionContacts>
+        <FormFilter
+          type="text"
+          name="filter"
+          value={filter}
+          onChange={handleChange}
+        />
+        <FormList items={filteredContacts} removeContact={removeContact} />
+      </SectionContacts>
+    </Section>
+  );
 }
