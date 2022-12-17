@@ -66,8 +66,6 @@ export default function Form() {
     return filteredContacts;
   };
 
-  const filteredContacts = getFilterContacts();
-
   return (
     <Section>
       <SectionContacts>
@@ -80,7 +78,7 @@ export default function Form() {
           value={filter}
           onChange={handleChange}
         />
-        <FormList items={filteredContacts} removeContact={removeContact} />
+        <FormList items={getFilterContacts()} removeContact={removeContact} />
       </SectionContacts>
     </Section>
   );
